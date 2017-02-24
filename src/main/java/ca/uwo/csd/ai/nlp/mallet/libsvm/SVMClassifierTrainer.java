@@ -102,8 +102,20 @@ public class SVMClassifierTrainer extends ClassifierTrainer<SVMClassifier> {
         return label;
     }
 
-    static SparseVector getVector(Instance instance) {
+    public static SparseVector getVector(Instance instance) {
         FeatureVector fv = (FeatureVector) instance.getData();
+        int[] indices = fv.getIndices();
+        double[] values = fv.getValues();
+        SparseVector vector = new SparseVector();
+        for (int i = 0; i < indices.length; i++) {
+            vector.add(indices[i], values[i]);
+        }
+        vector.sortByIndices();
+        return vector;
+    }
+    
+    public static SparseVector getVectorByData(Object data) {
+        FeatureVector fv = (FeatureVector) data;
         int[] indices = fv.getIndices();
         double[] values = fv.getValues();
         SparseVector vector = new SparseVector();

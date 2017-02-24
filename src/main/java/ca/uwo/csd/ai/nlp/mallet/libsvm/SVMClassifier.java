@@ -57,6 +57,29 @@ public class SVMClassifier extends Classifier implements Serializable {
 
     @Override
     public Classification classify(Instance instance) {
+    	KernelManager.setCustomKernel(this.kernel);
+        SparseVector vector = SVMClassifierTrainer.getVector(instance);
+        double[] scores = new double[model.nr_class];
+
+        //double sLabel = mltLabel2svmLabel.get(getLabelAlphabet().lookupLabel(instance.getTarget().toString()).toString());
+        double p = SVMPredictor.predictProbability(vector, model, scores);
+
+        //if SVM is not predicting probability then assign a score of 1.0 to the best class(p)
+        //and 0.0 to the other classes
+        if (!predictProbability) {
+            String label = svmLabel2mltLabel.get(p);
+            int index = getLabelAlphabet().lookupIndex(label, false);
+            scores[index] = 1.0;
+        } else {
+            rearrangeScores(scores);
+        }
+        Classification classification = new Classification(instance, this,
+                new LabelVector(getLabelAlphabet(), scores));
+
+        return classification;
+    }
+    
+    public Classification evaluateTarget(Instance instance) {
         //TODO: find a better approach
         KernelManager.setCustomKernel(this.kernel);
         SparseVector vector = SVMClassifierTrainer.getVector(instance);
